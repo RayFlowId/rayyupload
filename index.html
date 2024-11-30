@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload File ke telegra.ph</title>
+</head>
+<body>
+  <h1>Unggah File ke telegra.ph</h1>
+
+  <form id="uploadForm">
+    <label for="file">Pilih File:</label><br>
+    <input type="file" id="file" name="file" required><br><br>
+    <button type="submit">Unggah File</button>
+  </form>
+
+  <h2>Hasil:</h2>
+  <div id="result"></div>
+
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById('file');
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        // Menggunakan AllOrigins sebagai CORS proxy
+        const response = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://telegra.ph/upload'), {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Server error saat mengunggah file.');
+        }
+
+        const result = await response.json();
+
+        if (result && result.length > 0 && result[0].src) {
+          // URL file berhasil diunggah
+          const fileUrl = `https://telegra.ph${result[0].src}`;
+          document.getElementById('result').innerHTML = `
+            <p>File berhasil diunggah!</p>
+            <p><a href="${fileUrl}" target="_blank">${fileUrl}</a></p>
+          `;
+        } else {
+          throw new Error('Gagal mengunggah file. Periksa jenis file yang diunggah.');
+        }
+      } catch (error) {
+        // Menampilkan error yang lebih spesifik
+        document.getElementById('result').innerHTML = `
+          <p style="color: red;">Error: ${error.message}</p>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
